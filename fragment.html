@@ -1,0 +1,242 @@
+<main id="fruit-world" class="fruit-world">
+  <style>
+    #fruit-world {
+      --ink: #173b43;
+      --sprite: url("__SPRITE_DATA_URI__");
+      position: relative;
+      box-sizing: border-box;
+      min-height: 100%;
+      padding: 22px 20px 28px;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: ui-rounded, "Trebuchet MS", Arial, sans-serif;
+      background: radial-gradient(circle, #fff9 0 2px, transparent 3px) 0 0 / 58px 58px,
+        linear-gradient(170deg, #dcf5ff 0%, #f4fbff 46%, #eaf7d8 100%);
+    }
+    #fruit-world *, #fruit-world *::before, #fruit-world *::after { box-sizing: border-box; }
+    #fruit-world .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+    #fruit-world h1 { margin: 0; color: #19526a; font-size: 34px; line-height: 1.1; font-weight: 800; }
+    #fruit-world .sound { flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 2px solid #a6d5d5; border-radius: 8px; background: #fff; font-size: 23px; cursor: pointer; }
+    #fruit-world .sound[aria-pressed="true"] { border-color: #4db69b; background: #e9fff4; }
+    #fruit-world .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; max-width: 340px; padding: 4px; margin-bottom: 16px; border-radius: 8px; background: #d5e9eb; }
+    #fruit-world .mode { min-height: 42px; border: 0; border-radius: 6px; background: transparent; color: #35545a; font: 700 16px/1.2 ui-rounded, "Trebuchet MS", Arial, sans-serif; cursor: pointer; }
+    #fruit-world .mode[aria-pressed="true"] { color: #173b43; background: #fff; box-shadow: 0 2px 6px #2b69701f; }
+    #fruit-world .quest { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 58px; padding: 10px 14px; margin: 0 0 14px; border: 2px solid #a9d9b8; border-radius: 8px; background: #f2fff2; }
+    #fruit-world .quest[hidden], #fruit-world .again[hidden] { display: none; }
+    #fruit-world .quest-text { font-size: 18px; font-weight: 700; line-height: 1.25; }
+    #fruit-world .score { white-space: nowrap; color: #2b7557; font-weight: 800; font-size: 17px; }
+    #fruit-world .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    #fruit-world .fruit-card { display: grid; grid-template-rows: 1fr auto; justify-items: center; align-items: center; gap: 2px; min-width: 0; min-height: 190px; padding: 7px 8px 10px; border: 2px solid #fff; border-radius: 8px; color: var(--ink); background: #fffdf3; box-shadow: 0 5px 0 #64907b30, 0 10px 20px #32667613; cursor: pointer; touch-action: manipulation; transition: transform 160ms ease, box-shadow 160ms ease; }
+    #fruit-world .fruit-card:nth-child(3n + 2) { background: #fff4f5; }
+    #fruit-world .fruit-card:nth-child(3n) { background: #f4f3ff; }
+    #fruit-world .fruit-card:hover, #fruit-world .fruit-card:focus-visible { transform: translateY(-3px); }
+    #fruit-world .fruit-card:active { transform: translateY(1px) scale(.98); }
+    #fruit-world .fruit-card:focus-visible, #fruit-world .mode:focus-visible, #fruit-world .sound:focus-visible, #fruit-world .again:focus-visible { outline: 3px solid #216cbb; outline-offset: 2px; }
+    #fruit-world .fruit-card.is-found { border-color: #49b982; background: #ebfff1; }
+    #fruit-world .art { display: block; width: min(100%, 160px); aspect-ratio: 1; background-image: var(--sprite); background-size: 300% 200%; background-repeat: no-repeat; filter: drop-shadow(0 7px 6px #274b3822); transform-origin: 50% 75%; }
+    #fruit-world .banana { background-position: 0% 0%; }
+    #fruit-world .apple { background-position: 50% 0%; }
+    #fruit-world .orange { background-position: 100% 0%; }
+    #fruit-world .grapes { background-position: 0% 100%; }
+    #fruit-world .watermelon { background-position: 50% 100%; }
+    #fruit-world .mango { background-position: 100% 100%; }
+    #fruit-world .name { font-size: 18px; font-weight: 800; line-height: 1.2; }
+    #fruit-world .feedback { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 16px; padding: 9px 12px; border-radius: 8px; background: #ffffffc9; color: #355a58; text-align: center; font-size: 16px; font-weight: 700; line-height: 1.3; }
+    #fruit-world .again { display: block; min-height: 44px; margin: 12px auto 0; padding: 8px 18px; border: 0; border-radius: 8px; background: #237b58; color: #fff; font: 700 16px/1.2 ui-rounded, "Trebuchet MS", Arial, sans-serif; cursor: pointer; }
+    #fruit-world .bounce { animation: fw-bounce 800ms ease; }
+    #fruit-world .sway { animation: fw-sway 800ms ease; }
+    #fruit-world .spin { animation: fw-spin 850ms ease; }
+    #fruit-world .dance { animation: fw-dance 850ms ease; }
+    #fruit-world .roll { animation: fw-roll 800ms ease; }
+    #fruit-world .pop { animation: fw-pop 700ms ease; }
+    #fruit-world .oops { animation: fw-oops 450ms ease; }
+    @keyframes fw-bounce { 35% { transform: translateY(-25px) rotate(-6deg); } 60% { transform: translateY(5px); } }
+    @keyframes fw-sway { 25% { transform: rotate(-14deg); } 55% { transform: rotate(14deg); } 80% { transform: rotate(-7deg); } }
+    @keyframes fw-spin { to { transform: rotate(360deg); } }
+    @keyframes fw-dance { 25% { transform: translate(-10px,-10px) rotate(-9deg); } 50% { transform: translate(10px,0) rotate(9deg); } 75% { transform: translate(-5px,-6px) rotate(-5deg); } }
+    @keyframes fw-roll { 35% { transform: translateX(18px) rotate(15deg); } 70% { transform: translateX(-12px) rotate(-10deg); } }
+    @keyframes fw-pop { 40% { transform: scale(1.2); } 70% { transform: scale(.92); } }
+    @keyframes fw-oops { 25% { transform: translateX(-7px); } 50% { transform: translateX(7px); } 75% { transform: translateX(-4px); } }
+    #fruit-world .confetti { position: absolute; width: 9px; height: 9px; border-radius: 2px; pointer-events: none; animation: fw-confetti 800ms ease-out forwards; }
+    @keyframes fw-confetti { to { transform: translate(var(--dx), var(--dy)) rotate(420deg); opacity: 0; } }
+    @media (max-width: 560px) {
+      #fruit-world { padding: 16px 12px 24px; }
+      #fruit-world h1 { font-size: 29px; }
+      #fruit-world .top { margin-bottom: 12px; }
+      #fruit-world .modes { max-width: none; margin-bottom: 12px; }
+      #fruit-world .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      #fruit-world .fruit-card { min-height: 168px; padding: 4px 4px 9px; }
+      #fruit-world .art { width: min(100%, 128px); }
+      #fruit-world .name { font-size: 17px; }
+      #fruit-world .quest-text { font-size: 16px; }
+      #fruit-world .feedback { margin-top: 12px; }
+    }
+    @media (max-width: 350px) {
+      #fruit-world .art { width: min(100%, 116px); }
+      #fruit-world .fruit-card { min-height: 157px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #fruit-world .art, #fruit-world .fruit-card, #fruit-world .confetti { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+    }
+  </style>
+
+  <header class="top">
+    <h1>Frutinhas!</h1>
+    <button class="sound" type="button" aria-label="Ativar som" aria-pressed="false">🔇</button>
+  </header>
+  <div class="modes" aria-label="Modo de brincar">
+    <button class="mode" type="button" data-mode="play" aria-pressed="true">Brincar</button>
+    <button class="mode" type="button" data-mode="challenge" aria-pressed="false">Desafio</button>
+  </div>
+  <div class="quest" hidden>
+    <span class="quest-text">Encontre a banana!</span>
+    <span class="score" aria-label="Acertos">0 / 6 ★</span>
+  </div>
+  <div class="grid">
+    <button class="fruit-card" type="button" data-fruit="banana" data-motion="bounce" aria-label="Banana"><span class="art banana" aria-hidden="true"></span><span class="name">Banana</span></button>
+    <button class="fruit-card" type="button" data-fruit="apple" data-motion="sway" aria-label="Maçã"><span class="art apple" aria-hidden="true"></span><span class="name">Maçã</span></button>
+    <button class="fruit-card" type="button" data-fruit="orange" data-motion="spin" aria-label="Laranja"><span class="art orange" aria-hidden="true"></span><span class="name">Laranja</span></button>
+    <button class="fruit-card" type="button" data-fruit="grapes" data-motion="dance" aria-label="Uva"><span class="art grapes" aria-hidden="true"></span><span class="name">Uva</span></button>
+    <button class="fruit-card" type="button" data-fruit="watermelon" data-motion="roll" aria-label="Melancia"><span class="art watermelon" aria-hidden="true"></span><span class="name">Melancia</span></button>
+    <button class="fruit-card" type="button" data-fruit="mango" data-motion="pop" aria-label="Manga"><span class="art mango" aria-hidden="true"></span><span class="name">Manga</span></button>
+  </div>
+  <div class="feedback" aria-live="polite">Escolha uma frutinha para brincar!</div>
+  <button class="again" type="button" hidden>Jogar de novo</button>
+
+  <script>
+    (() => {
+      const root = document.getElementById('fruit-world');
+      if (!root) return;
+      const cards = [...root.querySelectorAll('.fruit-card')];
+      const modes = [...root.querySelectorAll('.mode')];
+      const feedback = root.querySelector('.feedback');
+      const quest = root.querySelector('.quest');
+      const questText = root.querySelector('.quest-text');
+      const scoreText = root.querySelector('.score');
+      const again = root.querySelector('.again');
+      const sound = root.querySelector('.sound');
+      const names = { banana: 'banana', apple: 'maçã', orange: 'laranja', grapes: 'uva', watermelon: 'melancia', mango: 'manga' };
+      const reactions = { banana: 'A banana deu um pulinho!', apple: 'A maçã balançou feliz!', orange: 'A laranja rodopiou!', grapes: 'A uva começou a dançar!', watermelon: 'A melancia foi de um lado para o outro!', mango: 'A manga cresceu e voltou!' };
+      const motions = ['bounce', 'sway', 'spin', 'dance', 'roll', 'pop', 'oops'];
+      let mode = 'play';
+      let order = [];
+      let score = 0;
+      let busy = false;
+      let soundOn = false;
+      let audioContext;
+      let advanceTimer;
+
+      function note(frequency, duration = .1) {
+        if (!soundOn) return;
+        try {
+          audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(.0001, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.13, audioContext.currentTime + .02);
+          gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (_) { /* Sound is optional. */ }
+      }
+
+      function move(card, motion) {
+        const art = card.querySelector('.art');
+        art.classList.remove(...motions);
+        void art.offsetWidth;
+        art.classList.add(motion);
+      }
+
+      function celebrate(card) {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        for (let i = 0; i < 12; i++) {
+          const piece = document.createElement('span');
+          piece.className = 'confetti';
+          piece.style.left = `${card.offsetLeft + card.offsetWidth / 2}px`;
+          piece.style.top = `${card.offsetTop + card.offsetHeight / 2}px`;
+          piece.style.background = ['#f7b733', '#ef5b73', '#4caf87', '#5b9ee9'][i % 4];
+          piece.style.setProperty('--dx', `${Math.cos(i * Math.PI / 6) * (70 + i % 3 * 14)}px`);
+          piece.style.setProperty('--dy', `${Math.sin(i * Math.PI / 6) * (65 + i % 4 * 10)}px`);
+          root.appendChild(piece);
+          piece.addEventListener('animationend', () => piece.remove(), { once: true });
+        }
+      }
+
+      function beginChallenge() {
+        clearTimeout(advanceTimer);
+        order = cards.map(card => card.dataset.fruit);
+        for (let i = order.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [order[i], order[j]] = [order[j], order[i]];
+        }
+        score = 0;
+        busy = false;
+        cards.forEach(card => card.classList.remove('is-found'));
+        scoreText.textContent = '0 / 6 ★';
+        questText.textContent = `Encontre a ${names[order[0]]}!`;
+        feedback.textContent = 'Qual é a frutinha?';
+        again.hidden = true;
+      }
+
+      function setMode(next) {
+        clearTimeout(advanceTimer);
+        mode = next;
+        modes.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === next)));
+        quest.hidden = next !== 'challenge';
+        again.hidden = true;
+        cards.forEach(card => card.classList.remove('is-found'));
+        if (next === 'challenge') beginChallenge();
+        else feedback.textContent = 'Escolha uma frutinha para brincar!';
+      }
+
+      modes.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+      again.addEventListener('click', beginChallenge);
+      sound.addEventListener('click', () => {
+        soundOn = !soundOn;
+        sound.setAttribute('aria-pressed', String(soundOn));
+        sound.setAttribute('aria-label', soundOn ? 'Desativar som' : 'Ativar som');
+        sound.textContent = soundOn ? '🔊' : '🔇';
+        if (soundOn) note(660);
+      });
+
+      cards.forEach(card => card.addEventListener('click', () => {
+        const fruit = card.dataset.fruit;
+        if (mode === 'play') {
+          move(card, card.dataset.motion);
+          feedback.textContent = reactions[fruit];
+          note(440 + cards.indexOf(card) * 60);
+          return;
+        }
+        if (busy || score === order.length) return;
+        if (fruit !== order[score]) {
+          move(card, 'oops');
+          feedback.textContent = `Tente encontrar a ${names[order[score]]}!`;
+          note(270);
+          return;
+        }
+        busy = true;
+        move(card, card.dataset.motion);
+        card.classList.add('is-found');
+        celebrate(card);
+        score++;
+        scoreText.textContent = `${score} / 6 ★`;
+        feedback.textContent = `Isso! Você encontrou a ${names[fruit]}!`;
+        note(660); setTimeout(() => note(880), 110);
+        if (score === order.length) {
+          questText.textContent = 'Você encontrou todas!';
+          feedback.textContent = 'Parabéns! As seis frutinhas estão felizes!';
+          again.hidden = false;
+          busy = false;
+        } else {
+          advanceTimer = setTimeout(() => {
+            questText.textContent = `Encontre a ${names[order[score]]}!`;
+            busy = false;
+          }, 900);
+        }
+      }));
+    })();
+  </script>
+</main>
